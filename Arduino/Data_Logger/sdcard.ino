@@ -13,13 +13,11 @@ void setupSdcard(){
 	}	
 }
 
-void salvar(int casa) {
+void salvar(char casa) {
 
   digitalWrite(action, HIGH);
 
-  char nome = casa+48;
-
-	if (!arquivo.open(nome, O_RDWR | O_CREAT | O_AT_END)){
+	if (!arquivo.open(casa, O_RDWR | O_CREAT | O_AT_END)){
 		delay(300);
 		digitalWrite(action, LOW);
 		delay(500);

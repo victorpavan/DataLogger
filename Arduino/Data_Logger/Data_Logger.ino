@@ -123,11 +123,11 @@ void loop(){
 	timestep();
 	if(relogio[1]%10 == 0){
 		if(!pronto){
-			salvar(0);
+			salvar('1');
 			delay(100);
-			salvar(1);
+			salvar('2');
 			delay(100);
-			salvar(2);
+			salvar('3');
 			pronto = true;
 		}
 	}else{
