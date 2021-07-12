@@ -13,7 +13,7 @@ void setupSdcard(){
 	}	
 }
 
-void salvar(char casa) {
+void salvar(char *casa) {
 
   digitalWrite(action, HIGH);
 
