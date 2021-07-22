@@ -1,7 +1,4 @@
-/*DATALOGGER ARDUINO
- * 
- * 
- */
+//DATALOGGER ARDUINO
 
 #include<ClosedCube_HDC1080.h>
 #include<Adafruit_MLX90614.h>
@@ -67,6 +64,30 @@ void setup(){
 
 	
 }
+
+int sampleSound(){
+
+	int maior = 0;
+	int menor = 1024;
+
+
+	for(unsigned int i=0; i<5000; i++){
+
+		int valor = analogRead(A0);
+
+		if(valor>maior){
+			maior = valor;
+		}
+
+		if(valor<menor){
+			menor = valor;
+		}
+	}
+		
+
+	return (maior - menor)/2;
+}
+
 
 void blink(byte code){
 	while(1){
