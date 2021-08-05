@@ -14,7 +14,7 @@ void setupSdcard(){
 
 void salvar(char *casa, bool cabecalho) {
 
-	int numerocasa = casa[0]-'0'-1;
+	int numerocasa = casa[0]-'0'-4;
 
 	digitalWrite(action_r, HIGH);
 
@@ -29,7 +29,7 @@ void salvar(char *casa, bool cabecalho) {
 	}else{
 
 		if(cabecalho){
-			arquivo.println("DATA; HORA; TEMP; UMIDADE; TEMP_IR");
+			arquivo.println("DATA; HORA; TEMP; UMIDADE; TEMP_IR; SOM_PICO");
 		}else{
 			arquivo.print(relogio[3]);
 			arquivo.print("/");
@@ -48,10 +48,13 @@ void salvar(char *casa, bool cabecalho) {
 				arquivo.print(";");
 				arquivo.print(hdc[numerocasa].readHumidity());
 				arquivo.print(";");
-				arquivo.println(mlx[numerocasa].readObjectTempC());
-
+				arquivo.print(mlx[numerocasa].readObjectTempC());
+				arquivo.print(";");
+				arquivo.println(intensidade_som[numerocasa]);
 			}else{
 
+				arquivo.print("N/A");
+				arquivo.print(";");
 				arquivo.print("N/A");
 				arquivo.print(";");
 				arquivo.print("N/A");

@@ -8,12 +8,13 @@
 #include<SPI.h>
 #include<SdFat.h>
 
-
 //Configurações gerais (alterar de acordo com a necessidade)
 
 #define SERIALBAUD 9600
 #define action_r 8
 #define action_g 9
+#define n_amostras 2000
+#define periodo_aquisicao 10 //minutos
 
 //Definicoes de variáveis globais
 unsigned int relogio[6]; //{hora, minuto, segundo, dia, mes, ano}
@@ -30,50 +31,18 @@ SoftwareWire barramento[] = {SoftwareWire(2,3), SoftwareWire(4,5), SoftwareWire(
 ClosedCube_HDC1080 hdc[3];
 Adafruit_MLX90614 mlx[3];
 
-void setup(){
+//Inicializacao das variavel de intensidade sonora
+int intensidade_som[3] = {0,0,0};
 
-	//Inicialização da comunicação serial
-	Serial.begin(SERIALBAUD);
-	//log(String("Inicializando comunicação serial a " + SERIALBAUD))
-
-	//Inicializacao dos leds
-	pinMode(action_r, OUTPUT);
-	pinMode(action_g, OUTPUT);
-
-	//Inicializacao dos sensores nos barramentos I2C
-	for(int i=0; i < 3; i++){
-		hdc[i].begin(0x40, barramento[i]);
-		mlx[i].begin(barramento[i]);
-	}
-
-	//Teste do cartao
-	setupSdcard();
-	//Tudo certo para comecar
-	digitalWrite(action_g, HIGH);
-
-	
-	//Cria cabecalho para marcar inicializacao
-	if(cartao_ok){
-		salvar("1", true);
-		delay(100);
-		salvar("2", true);
-		delay(100);
-		salvar("3", true);
-	}
-	
-
-	
-}
-
-int sampleSound(){
+int amostraSom(int pinoAnalogico, int variavel){
 
 	int maior = 0;
 	int menor = 1024;
 
 
-	for(unsigned int i=0; i<5000; i++){
+	for(unsigned int i=0; i<n_amostras; i++){
 
-		int valor = analogRead(A0);
+		int valor = analogRead(pinoAnalogico);
 
 		if(valor>maior){
 			maior = valor;
@@ -85,7 +54,13 @@ int sampleSound(){
 	}
 		
 
-	return (maior - menor)/2;
+	int resultado = (maior - menor)/2;
+
+	if(resultado>variavel){
+		return resultado;
+	}else{
+		return variavel;
+	}
 }
 
 
@@ -142,6 +117,39 @@ void timestep() {
 	}
 }
 
+void setup(){
+
+	//Inicialização da comunicação serial
+	Serial.begin(SERIALBAUD);
+	//log(String("Inicializando comunicação serial a " + SERIALBAUD))
+
+	//Inicializacao dos leds
+	pinMode(action_r, OUTPUT);
+	pinMode(action_g, OUTPUT);
+
+	//Inicializacao dos sensores nos barramentos I2C
+	for(int i=0; i < 3; i++){
+		hdc[i].begin(0x40, barramento[i]);
+		mlx[i].begin(barramento[i]);
+	}
+
+	//Teste do cartao
+	setupSdcard();
+	//Tudo certo para comecar
+	digitalWrite(action_g, HIGH);
+
+	
+	//Cria cabecalho para marcar inicializacao
+	if(cartao_ok){
+		salvar("4", true);
+		delay(100);
+		salvar("5", true);
+		delay(100);
+		salvar("6", true);
+	}
+
+}
+
 void loop(){
 
 	for(int i=0; i < 3; i++){
@@ -152,9 +160,13 @@ void loop(){
 			Serial.print(';');
 			Serial.print(hdc[i].readHumidity());
 			Serial.print(';');
-			Serial.println(mlx[i].readObjectTempC());
+			Serial.print(mlx[i].readObjectTempC());
+			Serial.print(';');
+			Serial.println(intensidade_som[i]);
 		}else{
 			Serial.print(i+1);
+			Serial.print(';');
+			Serial.print("N/A");
 			Serial.print(';');
 			Serial.print("N/A");
 			Serial.print(';');
@@ -163,26 +175,29 @@ void loop(){
 			Serial.println("N/A");
 		}
 	}
-	
-		
+
+
+	intensidade_som[0] = amostraSom(A0, intensidade_som[0]);
+	intensidade_som[1] = amostraSom(A1, intensidade_som[1]);
+	intensidade_som[2] = amostraSom(A2, intensidade_som[2]);
 
 	timestep();
 	if(!cartao_ok){
 	   	digitalWrite(action_g, cartao_ok_led);
 		cartao_ok_led = !cartao_ok_led;
 	}else{
-		if(relogio[2]%10 == 0){
+		if(relogio[1]%periodo_aquisicao == 0){
 			if(!pronto){
-				salvar("1", false);
+				salvar("4", false);
 				delay(100);
-				salvar("2", false);
+				salvar("5", false);
 				delay(100);
-				salvar("3", false);
+				salvar("6", false);
 				pronto = true;
 			}
 		}else{
 			pronto = false;
 		}
 	}
-	delay(500);
+	delay(200);
 }
